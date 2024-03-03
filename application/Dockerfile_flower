@@ -1,0 +1,10 @@
+FROM python:3.10-alpine
+WORKDIR /application
+
+COPY /requirements.txt requirements.txt
+
+RUN pip install -r requirements.txt --no-cache-dir
+
+COPY . .
+
+ENTRYPOINT celery -A tasks.celery_conf:celery_worker flower

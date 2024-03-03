@@ -1,0 +1,34 @@
+// A launch configuration that compiles the extension and then opens it inside a new window
+{
+  "version": "0.1.0",
+  "configurations": [
+    {
+      "name": "Отладчик Python: FastAPI",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["main:app", "--reload"],
+      "jinja": true
+    },
+    {
+      "name": "Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/out/**/*", "!${workspaceFolder}/**/node_modules**/*"],
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "VSC_PYTHON_FORCE_LOGGING": "1",
+        // Enable this to try out new experiments locally
+        "VSC_PYTHON_LOAD_EXPERIMENTS_FROM_FILE": "1",
+        // Enable this to log telemetry to the output during debugging
+        "XVSC_PYTHON_LOG_TELEMETRY": "1",
+        // Enable this to log debugger output. Directory must exist ahead of time
+        "XDEBUGPY_LOG_DIR": "${workspaceRoot}/tmp/Debug_Output_Ex"
+      }
+    }
+  ]
+}
