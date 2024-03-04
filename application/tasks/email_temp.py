@@ -25,7 +25,7 @@ def create_booking_reminder(booking: dict, user: EmailStr):
     email["To"] = user
     email.set_content(
         f"""<h1>Напоминание о бронировании</h1>
-        Вы забронировали отель
+        Вы забронировали отель на {booking['date_to']-booking['date_from']-1}
          с {booking['date_from']} по {booking['date_to']}""",
         subtype="html",
     )
