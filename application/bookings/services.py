@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 
 from sqlalchemy import select
 
@@ -6,6 +6,7 @@ from base.services import BaseService
 from bookings.models import Bookings
 from database import async_session
 from hotels.rooms.models import Rooms
+from sqlalchemy.orm import joinedload
 from utils.exceptions import ConflictException
 
 
@@ -14,18 +15,21 @@ class BookingsService(BaseService):
 
     @classmethod
     async def find_by_all(
-        cls, user_id: int, before: bool = False
+        cls, user_id: int, before: bool = False, datedelta: date = None
     ) -> list[Bookings]:
         query = (
             select(Bookings.__table__.columns)
             .join(Rooms, Rooms.id == Bookings.room_id)
             .where(Bookings.user_id == user_id)
         )
+
         if before:
             query = query.where(Bookings.date_to < datetime.now(timezone.utc))
         else:
             query = query.where(Bookings.date_to > datetime.now(timezone.utc))
-        print(query)
+        if datedelta:
+            query = query.where(
+                Bookings.date_from == datetime.now(timezone.utc) + datedelta)
         async with async_session() as session:
             result = await session.execute(query)
             return result.mappings().all()
@@ -34,6 +38,7 @@ class BookingsService(BaseService):
     async def find_one(
         cls, price: int, date_from: date, date_to: date, hotel_id: int
     ) -> Rooms:
+
         boocked_rooms = (
             select(Rooms)
             .join(Bookings, Rooms.id == Bookings.room_id)
@@ -87,3 +92,17 @@ class BookingsService(BaseService):
             date_to=date_to,
         )
         return result.mappings().one()
+
+    @classmethod
+    async def find_need_to_remind(cls, days: int):
+        """Список бронирований и пользователей, которым необходимо
+        направить напоминание за `days` дней"""
+        async with async_session() as session:
+            query = (
+                select(Bookings)
+                .options(joinedload(Bookings.user))
+                .filter(
+                    date.today() == Bookings.date_from-timedelta(days=days))
+            )
+            result = await session.execute(query)
+            return result.scalars().all()

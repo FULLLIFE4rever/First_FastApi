@@ -10,8 +10,14 @@ celery_worker = Celery(
 )
 
 celery_worker.conf.beat_schedule = {
-    "name": {
+    "before_3_days": {
         "task": "periodic_task",
-        "schedule": crontab(),
+        "schedule": crontab(hour='15', minute='00', day_of_month='*/1'),
+        "args": (3,)
+    },
+    "before_1_days": {
+        "task": "periodic_task",
+        "schedule": crontab(hour='9', minute='30', day_of_month='*/1'),
+        "args": (1,)
     }
 }
